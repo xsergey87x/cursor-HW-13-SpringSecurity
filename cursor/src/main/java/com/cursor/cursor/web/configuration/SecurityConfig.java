@@ -34,9 +34,9 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    private final RsaKeyProperties jwtConfigProperties;
+    private final RsaProperties jwtConfigProperties;
 
-    public SecurityConfig(RsaKeyProperties jwtConfigProperties) {
+    public SecurityConfig(RsaProperties jwtConfigProperties) {
         this.jwtConfigProperties = jwtConfigProperties;
     }
 
