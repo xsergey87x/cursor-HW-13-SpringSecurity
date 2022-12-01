@@ -25,67 +25,67 @@ import javax.servlet.Filter;
 
 import static org.springframework.transaction.TransactionDefinition.withDefaults;
 
-@Configuration
-@EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+//@Configuration
+//@EnableWebSecurity
+//@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfiguration  {
-
-    @Autowired
-    private AuthenticationEntryPoint authenticationEntryPoint;
-
-    @Autowired
-    UserDetailsService userDetailsService;
-
-    @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter(){
-        return  new JwtAuthenticationFilter();
-    }
-
-    @Autowired
-    PasswordEncoder passwordEncoder;
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception{
-        httpSecurity.csrf()
-                .disable()
-                .authorizeRequests()
-                .antMatchers(HttpMethod.DELETE)
-                .hasRole("ADMIN")
-                .antMatchers("/admin/**")
-                .hasAnyRole("ADMIN")
-                .antMatchers("/user/**")
-                .hasAnyRole("USER", "ADMIN")
-                .antMatchers("/login/**")
-                .anonymous()
-                .anyRequest()
-                .authenticated()
-                .and()
-                .httpBasic()
-                .and()
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        return httpSecurity.build();
-    }
-
-    @Bean
-    public UserDetailsService userDetailsService() {
-        UserDetails userDetails = User.builder()
-                .passwordEncoder(passwordEncoder::encode)
-                .username("user")
-                .password("password")
-                .roles("USER")
-                .build();
-        return new InMemoryUserDetailsManager(userDetails);
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
-    }
+//
+//    @Autowired
+//    private AuthenticationEntryPoint authenticationEntryPoint;
+//
+//    @Autowired
+//    UserDetailsService userDetailsService;
+//
+//    @Bean
+//    public JwtAuthenticationFilter jwtAuthenticationFilter(){
+//        return  new JwtAuthenticationFilter();
+//    }
+//
+//    @Autowired
+//    PasswordEncoder passwordEncoder;
+//
+//    @Bean
+//    public PasswordEncoder passwordEncoder() {
+//        return new BCryptPasswordEncoder();
+//    }
+//
+//    @Bean
+//    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception{
+//        httpSecurity.csrf()
+//                .disable()
+//                .authorizeRequests()
+//                .antMatchers(HttpMethod.DELETE)
+//                .hasRole("ADMIN")
+//                .antMatchers("/admin/**")
+//                .hasAnyRole("ADMIN")
+//                .antMatchers("/user/**")
+//                .hasAnyRole("USER", "ADMIN")
+//                .antMatchers("/login/**")
+//                .anonymous()
+//                .anyRequest()
+//                .authenticated()
+//                .and()
+//                .httpBasic()
+//                .and()
+//                .sessionManagement()
+//                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+//        return httpSecurity.build();
+//    }
+//
+//    @Bean
+//    public UserDetailsService userDetailsService() {
+//        UserDetails userDetails = User.builder()
+//                .passwordEncoder(passwordEncoder::encode)
+//                .username("user")
+//                .password("password")
+//                .roles("USER")
+//                .build();
+//        return new InMemoryUserDetailsManager(userDetails);
+//    }
+//
+//    @Bean
+//    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+//        return authenticationConfiguration.getAuthenticationManager();
+//    }
 
 }
