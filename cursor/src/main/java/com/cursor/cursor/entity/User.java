@@ -10,7 +10,7 @@ import javax.persistence.Id;
 @Entity
 @Data
 @RequiredArgsConstructor
-public class User {
+public class User  {
 
     @Id
     @GeneratedValue
