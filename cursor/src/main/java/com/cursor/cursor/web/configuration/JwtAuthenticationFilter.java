@@ -1,4 +1,4 @@
 package com.cursor.cursor.web.configuration;
 
-public class JwtAuthenticationEntryPoint {
+public class JwtAuthenticationFilter {
 }

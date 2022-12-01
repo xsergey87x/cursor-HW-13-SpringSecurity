@@ -32,8 +32,11 @@ public class WebSecurityConfiguration  {
     @Autowired
     UserDetailsService userDetailsService;
 
-    @Autowired
-    private Filter jwtRequestFilter;
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter(){
+        return  new JwtAuthenticationFilter();
+    }
+
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception{
