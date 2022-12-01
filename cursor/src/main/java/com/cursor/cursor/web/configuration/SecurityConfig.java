@@ -1,11 +1,16 @@
 package com.cursor.cursor.web.configuration;
 
+import com.cursor.cursor.service.CustomUserDetailsService;
+import com.cursor.cursor.service.TokenService;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -14,6 +19,8 @@ import org.springframework.security.config.annotation.web.configurers.oauth2.ser
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
@@ -34,60 +41,60 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    private final RsaProperties jwtConfigProperties;
+    private final RsaProperties rsaKeys;
 
-    public SecurityConfig(RsaProperties jwtConfigProperties) {
-        this.jwtConfigProperties = jwtConfigProperties;
+    public AppSecurityConfig(RsaProperties rsaKeys) {
+        this.rsaKeys = rsaKeys;
     }
 
     @Bean
-    public InMemoryUserDetailsManager users() {
-        return new InMemoryUserDetailsManager(
-                User.withUsername("dvega")
-                        .password("{noop}password")
-                        .authorities("read")
-                        .build()
-        );
+    public BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
-                .csrf(csrf -> csrf.disable())
-                .authorizeRequests( auth -> auth
-                        .mvcMatchers("/token").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
-                .exceptionHandling((ex) -> ex
-                        .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
-                        .accessDeniedHandler(new BearerTokenAccessDeniedHandler())
-                )
-                .httpBasic(Customizer.withDefaults()) //
-                .build();
+    public UserDetailsService customUserDetailsService() {
+        return new CustomUserDetailsService();
     }
 
     @Bean
-    JwtDecoder jwtDecoder() {
-        return NimbusJwtDecoder.withPublicKey(jwtConfigProperties.publicKey()).build();
+    public AuthenticationManager authManager() {
+        var authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(customUserDetailsService());
+        authProvider.setPasswordEncoder(passwordEncoder());
+        return new ProviderManager(authProvider);
     }
 
     @Bean
     JwtEncoder jwtEncoder() {
-        JWK jwk = new RSAKey.Builder(jwtConfigProperties.publicKey()).privateKey(jwtConfigProperties.privateKey()).build();
-        JWKSource<SecurityContext> jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
-        return new NimbusJwtEncoder(jwks);
+        JWK jwk = new RSAKey.Builder(rsaKeys.publicKey()).privateKey(rsaKeys.privateKey()).build();
+        JWKSource<SecurityContext> jwkSource = new ImmutableJWKSet<>(new JWKSet(jwk));
+        return new NimbusJwtEncoder(jwkSource);
     }
 
     @Bean
-    CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("https://localhost:3000"));
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowedMethods(List.of("GET"));
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
+    JwtDecoder jwtDecoder() {
+        return NimbusJwtDecoder.withPublicKey(rsaKeys.publicKey()).build();
+    }
+
+    @Bean
+    TokenService tokenService() {
+        return new TokenService(jwtEncoder());
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
+        return http
+                .csrf(csrf -> csrf.disable())
+                .authorizeRequests(auth -> auth
+                        .mvcMatchers("/login").permitAll()
+                        .mvcMatchers("/token/refresh").permitAll()
+                        .mvcMatchers("/admin").hasAuthority("SCOPE_adm")
+                        .mvcMatchers("/user").hasAuthority("SCOPE_usr")
+                        .anyRequest().authenticated())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .oauth2ResourceServer(OAuth2ResourceServerConfigurer :: jwt )
+                .build();
     }
 }
