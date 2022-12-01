@@ -4,6 +4,7 @@ import com.cursor.cursor.service.CustomUserDetailsService;
 import com.cursor.cursor.service.TokenService;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import org.springframework.context.annotation.Bean;
@@ -25,7 +26,6 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
-import java.security.interfaces.RSAKey;
 
 @Configuration
 @EnableWebSecurity
@@ -58,7 +58,9 @@ public class AppSecurityConfig {
 
     @Bean
     JwtEncoder jwtEncoder() {
+
         JWK jwk = new RSAKey.Builder(rsaKeys.publicKey()).privateKey(rsaKeys.privateKey()).build();
+
         JWKSource<SecurityContext> jwkSource = new ImmutableJWKSet<>(new JWKSet(jwk));
         return new NimbusJwtEncoder(jwkSource);
     }
