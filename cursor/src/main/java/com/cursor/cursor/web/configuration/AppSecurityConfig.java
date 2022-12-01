@@ -33,7 +33,6 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity
 public class AppSecurityConfig {
 
-    @Autowired
     private final RsaProperties rsaKeys;
 
     public AppSecurityConfig(RsaProperties rsaKeys) {
