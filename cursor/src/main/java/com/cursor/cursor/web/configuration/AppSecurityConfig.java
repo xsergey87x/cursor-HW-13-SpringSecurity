@@ -1,14 +1,12 @@
 package com.cursor.cursor.web.configuration;
 
 import com.cursor.cursor.service.CustomUserDetailsService;
-import com.cursor.cursor.service.TokenService;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,8 +15,6 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -70,25 +66,23 @@ public class AppSecurityConfig {
     JwtDecoder jwtDecoder() {
         return NimbusJwtDecoder.withPublicKey(rsaKeys.publicKey()).build();
     }
-//
-//    @Bean
-//    TokenService tokenService() {
-//        return new TokenService(jwtEncoder());
-//    }
+
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        return http
-                .csrf(csrf -> csrf.disable())
-                .authorizeRequests(auth -> auth
-                        .mvcMatchers("/login").permitAll()
-                        .mvcMatchers("/token/refresh").permitAll()
-                        .mvcMatchers("/admin").hasAuthority("SCOPE_adm")
-                        .mvcMatchers("/user").hasAuthority("SCOPE_usr")
-                        .anyRequest().authenticated())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .oauth2ResourceServer(OAuth2ResourceServerConfigurer :: jwt )
-                .build();
+        http.csrf(csrf -> csrf.disable()).authorizeRequests().anyRequest().authenticated().and().formLogin().and().httpBasic();
+        return http.build();
+
+//                .authorizeRequests(auth -> auth
+//                        .mvcMatchers("/login").permitAll()
+//                        .mvcMatchers("/token/refresh").permitAll()
+//                        .mvcMatchers("/admin").hasAuthority("SCOPE_adm")
+//                        .mvcMatchers("/user").hasAuthority("SCOPE_usr")
+//                        .anyRequest().authenticated())
+//                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//                .oauth2ResourceServer(OAuth2ResourceServerConfigurer :: jwt )
+//                .build();
+
     }
 }

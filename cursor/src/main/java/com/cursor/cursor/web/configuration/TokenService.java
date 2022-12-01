@@ -1,4 +1,4 @@
-package com.cursor.cursor.service;
+package com.cursor.cursor.web.configuration;
 
 import com.cursor.cursor.model.CustomUserDetails;
 import com.nimbusds.jwt.SignedJWT;

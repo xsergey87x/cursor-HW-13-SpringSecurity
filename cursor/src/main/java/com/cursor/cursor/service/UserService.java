@@ -3,6 +3,7 @@ package com.cursor.cursor.service;
 import com.cursor.cursor.entity.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
